@@ -12,7 +12,9 @@ import (
 )
 
 var DEBUG_MODE = flag.Bool("debug", false, "enable debug mode")
-var OUPUT_FILE = flag.String("output", "data.json", "output file (.csv, .json supported)")
+var TRANSPORT_ENDPOINT = flag.String("e", "", "transport endpoint (accept https-http, leave empty to disable)")
+var TRANSPORT_HEADERS = flag.String("h", "", "transport headers (serialized JSON)")
+var OUPUT_FILE = flag.String("output", "data.json", "output file (.csv, .json)")
 var COLLECT_INTERVAL = flag.Int("interval", 3000, "collect interval in miliseconds")
 
 func main() {

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
@@ -137,6 +139,49 @@ func json_save(msgs []Message) {
 	defer file.Close()
 }
 
+func transport_http(msgs []Message) {
+	if len(msgs) == 0 {
+		return
+	}
+
+	// create http request and send it
+	var start = time.Now()
+
+	var buf = new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(msgs)
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", *TRANSPORT_ENDPOINT, buf)
+
+	var headersKV = make(map[string]string, 0)
+	err = json.Unmarshal([]byte(*TRANSPORT_HEADERS), &headersKV)
+	if err != nil {
+		panic(err)
+	}
+
+	for k, v := range headersKV {
+		req.Header.Set(k, v)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	_, err = client.Do(req)
+
+	if *DEBUG_MODE {
+		log.Printf("transport_http for %d messages took %s", len(msgs), time.Since(start))
+	}
+
+	if err != nil {
+		log.Printf("failed to send request: %s", err)
+		return
+	}
+}
+
 func save_worker() {
 	if len(stack) == 0 {
 		return
@@ -155,6 +200,10 @@ func save_worker() {
 
 	if *DEBUG_MODE {
 		log.Printf("save_worker for %d messages took %s", len(local), time.Since(start))
+	}
+
+	if *TRANSPORT_ENDPOINT != "" {
+		transport_http(local)
 	}
 
 	return
