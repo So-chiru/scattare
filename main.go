@@ -11,20 +11,29 @@ import (
 	"time"
 )
 
+var CHANNEL = flag.String("channel", "", "twitch channel id that wishes to connect with")
 var DEBUG_MODE = flag.Bool("debug", false, "enable debug mode")
-var TRANSPORT_ENDPOINT = flag.String("e", "", "transport endpoint (accept https-http, leave empty to disable)")
-var TRANSPORT_HEADERS = flag.String("h", "", "transport headers (serialized JSON)")
+var TRANSPORT_ENDPOINT = flag.String("endpoint", "", "transport endpoint (accept https-http, leave empty to disable)")
+var TRANSPORT_HEADERS = flag.String("headers", "", "transport headers (serialized JSON)")
 var OUPUT_FILE = flag.String("output", "data.json", "output file (.csv, .json)")
 var COLLECT_INTERVAL = flag.Int("interval", 3000, "collect interval in miliseconds")
 
+func init() {
+	flag.StringVar(CHANNEL, "c", "", "alias of channel, twitch channel id that wishes to connect with")
+	flag.BoolVar(DEBUG_MODE, "d", false, "alias of debug, enable debug mode")
+	flag.StringVar(TRANSPORT_ENDPOINT, "e", "", "alias of endpoint, transport endpoint (accept https-http, leave empty to disable)")
+	flag.StringVar(TRANSPORT_HEADERS, "h", "", "alias of headers, transport headers (serialized JSON)")
+	flag.StringVar(OUPUT_FILE, "o", "data.json", "alias of output, output file (.csv, .json)")
+	flag.IntVar(COLLECT_INTERVAL, "i", 3000, "alias of interval, collect interval in miliseconds")
+}
+
 func main() {
-	var channel = flag.String("channel", "", "channel to connect to")
 	flag.Parse()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	if channel == nil || *channel == "" {
+	if CHANNEL == nil || *CHANNEL == "" {
 		panic("channel is required")
 	}
 
@@ -68,5 +77,5 @@ func main() {
 		}
 	}()
 
-	connect(*channel, ch)
+	connect(*CHANNEL, ch)
 }
